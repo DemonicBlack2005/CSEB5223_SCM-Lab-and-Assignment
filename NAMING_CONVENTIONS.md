@@ -3,7 +3,7 @@
 
 This is the reference for how we name things and how big a function is allowed to get in OLMS. Check it before you commit.
 
----
+--- 
 
 ## Naming Conventions
 
