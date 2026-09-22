@@ -1,14 +1,13 @@
 # CSEB5223_SCM-Lab-and-Assignment
 # Online Local Mart System (OLMS)
 
-A web-based local commerce platform connecting neighborhood grocery marts, supermarkets, and specialty food stores with nearby residents for fast, on-demand ordering and delivery.
+A web-based local commerce platform connecting neighborhood grocery marts, supermarkets, and specialty food stores with nearby residents for fast, on-demand ordering and ordering updates.
 
 ---
 
 ## 📦 System Modules
 - **Customer Portal:** Browse nearby marts, search localized inventory, real-time cart, and checkout.
-- **Merchant Dashboard:** Store operations, product catalog, inventory tracking, and order dispatch.
-- **Driver Dispatch:** Delivery assignment tracking and fulfillment confirmation.
+- **Merchant Dashboard:** Store operations, product catalog, inventory tracking, and order update.
 - **Admin Hub:** Merchant onboarding and platform configuration.
 
 ---
