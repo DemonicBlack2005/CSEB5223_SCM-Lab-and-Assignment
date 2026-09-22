@@ -1,0 +1,31 @@
+Question 4
+Define communication and continuous integration rules
+a.	Communication Rules
+-	All project-related communication should be conducted through the agreed team communication platform.
+-	GitHub Issues should be used to report bugs, assign development tasks, and track project-related problems.
+-	Team members should clearly describe the issue, expected outcome, and relevant module when creating an issue.
+-	Team members should provide regular updates on their assigned tasks and inform the team early about any problems or delays.
+-	Technical decisions that affect the system architecture, database, coding standards, or development workflow should be discussed with the team before implementation.
+-	Pull Requests should include a clear description of the changes made and the related issue or task where applicable.
+-	Team members should review and respond to Pull Request comments before the code is merged.
+-	Important project decisions and changes should be documented in GitHub so that they can be referred to by all team members.
+-	Team members should use the approved domain terminology consistently, such as `Customer`, `Staff`, `Product`, `Order`, `stockQuantity`, and `totalAmount`.
+-	Any changes to the agreed coding standards, system structure, or development workflow should be communicated to the entire team.
+
+
+
+
+b.	Continuous Integration Rules
+-	All new features and fixes must be developed using a separate `feature/*` branch.
+-	Developers must not directly push changes to the `main` or `dev` branches.
+-	Completed features must be submitted through a Pull Request to the `dev` branch.
+-	Each Pull Request must be reviewed by at least one other team member before merging.
+-	CI checks must run automatically when code is pushed to a feature branch or when a Pull Request is created or updated.
+-	CI must verify that the project can be built successfully and that automated tests, where available, pass successfully.
+-	Code that fails the required CI checks must not be merged until the errors are fixed.
+-	The `dev` branch is used to integrate and test completed features before they are released to `main`.
+-	The `main` branch must contain only stable and production-ready code.
+-	Changes merged into `dev` should not break existing system modules such as Customer, Staff, Product, and Order functions.
+-	Developers should ensure that their code follows the approved naming conventions and modularity rules before creating a Pull Request.
+-	Functions should remain within the agreed maximum of 30 lines unless there is a documented reason for exceeding the limit.
+-	Any failed CI build or test should be investigated and resolved by the developer responsible for the change.
