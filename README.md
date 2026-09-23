@@ -21,12 +21,15 @@ A web-based local commerce platform connecting neighborhood grocery marts, super
 
 ---
 
-## 👥 Contributors & Roles (to be decided)
-- **Team Lead:** [Chan Wei Hong] ([@DemonicBlack2005]([https://github.com/DemonicBlack2005])
-- **Frontend Developer:** [Name] ([@github-username](https://github.com/...))
-- **Backend Developer:** [Name] ([@github-username](https://github.com/...))
-- **QA & Database Engineer:** [Name] ([@github-username](https://github.com/...))
-- **Assessing Lecturer:** [@YimLingLoo](https://github.com/YimLingLoo)
+## 👥 Contributors (Team Members)
+
+| Role | Name | GitHub Username | Profile Link |
+| :--- | :--- | :--- | :--- |
+| **Team Lead** | Chan Wei Hong | `@DemonicBlack2005` | [DemonicBlack2005](https://github.com/DemonicBlack2005) |
+| **Member** | Hussein Musa Mohammed Osman | `@klombabomba` | [klombabomba](https://github.com/klombabomba) |
+|  | Krishnacharani A/P V Karthigeyan | `@Krishnacharani` | [Krishnacharani](https://github.com/Krishnacharani) |
+|  | Syed Fardeyn bin Salahudeen | `@syedfd37` | [syedfd37](https://github.com/syedfd37) |
+| **Assessing Lecturer** | Ts. Dr. Loo Yim Ling | `@YimLingLoo` | [YimLingLoo](https://github.com/YimLingLoo) |
 
 ---
 
@@ -37,6 +40,6 @@ A web-based local commerce platform connecting neighborhood grocery marts, super
 
 ---
 
-## 📏 Standards & Modularity
+## 📏 Standards & Modularity (listed in Assignment Part 1 Report)
 - **Naming:** `PascalCase` (classes), `camelCase` (functions/variables), `snake_case` (database).
 - **Modularity:** Layered MVC/Service architecture with maximum 30 lines per function.
