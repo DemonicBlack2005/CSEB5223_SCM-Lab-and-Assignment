@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OLMS - Product Construction & CRUD Module</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --danger: #dc2626;
+            --success: #16a34a;
+            --dark: #0f172a;
+            --gray-light: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: #f1f5f9; color: #334155; padding: 24px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        header {
+            background: #fff; padding: 20px 24px; border-radius: 8px;
+            border: 1px solid var(--border); margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        h1 { font-size: 22px; color: var(--dark); }
+        .meta-text { font-size: 13px; color: #64748b; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .card { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+        .card-full { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+        h2 { font-size: 16px; margin-bottom: 12px; color: var(--dark); border-bottom: 2px solid var(--border); padding-bottom: 8px; }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+        label { font-size: 12px; font-weight: 600; color: #475569; }
+        input, select, button { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; }
+        .form-row { display: flex; gap: 10px; margin-top: 10px; }
+
+        button { background-color: var(--primary); color: #fff; border: none; cursor: pointer; font-weight: 500; }
+        button:hover { opacity: 0.9; }
+        button.btn-danger { background-color: var(--danger); }
+        button.btn-secondary { background-color: #64748b; }
+
+        /* Status & Alert Messages */
+        .message-box { padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-top: 10px; display: none; }
+        .msg-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; display: block; }
+        .msg-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; display: block; }
+        .msg-info { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; display: block; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); }
+        th { background: #f8fafc; color: #475569; font-weight: 600; }
+        .btn-action { padding: 4px 8px; font-size: 11px; margin-right: 4px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>Online Local Mart System (OLMS)</h1>
+            <p class="meta-text">CSEB5223: Software Construction — Lab 3 & 4 CRUD Delivery</p>
+        </div>
+        <div class="meta-text" style="text-align: right;">
+            Target Module: <strong>Product (Staff Inventory)</strong><br>
+            Active Role: <strong>Staff (Inventory Manager)</strong>
+        </div>
+    </header>
+
+    <div class="grid">
+        <!-- 1. CREATE FUNCTION CONSTRUCTION -->
+        <div class="card">
+            <h2>1. Create Product Construction</h2>
+            <form id="createProductForm" onsubmit="handleCreateProduct(event)">
+                <div class="form-group">
+                    <label>Product ID (e.g., P005):</label>
+                    <input type="text" id="create_productID" required placeholder="P005">
+                </div>
+                <div class="form-group">
+                    <label>Product Name:</label>
+                    <input type="text" id="create_name" required placeholder="Item title">
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Price ($):</label>
+                        <input type="number" step="0.01" min="0" id="create_price" required placeholder="0.00">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Stock Quantity:</label>
+                        <input type="number" min="0" id="create_stockQuantity" required placeholder="0">
+                    </div>
+                </div>
+                <button type="submit" style="width: 100%; margin-top: 6px;">Add Product to Inventory</button>
+            </form>
+            <div id="createFeedback" class="message-box"></div>
+        </div>
+
+        <!-- 2. SEARCH FUNCTION CONSTRUCTION -->
+        <div class="card">
+            <h2>2. Search Product Construction</h2>
+            <form onsubmit="handleSearchProduct(event)">
+                <div class="form-group">
+                    <label>Search by Product ID or Name:</label>
+                    <div class="form-row" style="margin-top: 0;">
+                        <input type="text" id="search_query" required placeholder="Enter ID (P001) or Name..." style="flex: 2;">
+                        <button type="submit" style="flex: 1;">Search</button>
+                    </div>
+                </div>
+            </form>
+            <div id="searchFeedback" class="message-box"></div>
+            <div id="searchResultsDisplay" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <!-- 3 & 4. EDIT & DELETE WORKSPACE -->
+    <div id="editDeleteSection" class="card" style="display: none; margin-bottom: 20px;">
+        <h2>3 & 4. Edit / Delete Product Workspace</h2>
+        <form id="editForm" onsubmit="handleSaveEdit(event)">
+            <input type="hidden" id="edit_productID">
+            <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label>Product Name:</label>
+                    <input type="text" id="edit_name" required>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Price ($):</label>
+                    <input type="number" step="0.01" min="0" id="edit_price" required>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Stock Quantity:</label>
+                    <input type="number" min="0" id="edit_stockQuantity" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <button type="submit" style="flex: 1;">Save Changes</button>
+                <button type="button" class="btn-danger" onclick="handleDeletePrompt()" style="flex: 1;">Delete Product</button>
+                <button type="button" class="btn-secondary" onclick="closeEditWorkspace()" style="flex: 1;">Cancel</button>
+            </div>
+        </form>
+        <div id="editFeedback" class="message-box"></div>
+    </div>
+
+    <!-- 5. DATA DISPLAY FUNCTION CONSTRUCTION -->
+    <div class="card-full">
+        <h2>5. Product Inventory Display Table</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product ID</th>
+                    <th>Product Name</th>
+                    <th>Price</th>
+                    <th>Stock Quantity</th>
+                    <th>Operations</th>
+                </tr>
+            </thead>
+            <tbody id="inventoryTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ========================================================================== -->
+<!-- OBJECT-ORIENTED PROGRAMMING: Product Class & Services -->
+<!-- ========================================================================== -->
+<script>
+/**
+ * Product Entity Class
+ * Encapsulation: Strict private fields with explicit Getters & Setters
+ * Conforms to Activity 3(a) & 3(b) standards
+ */
+class Product {
+    #productID;
+    #name;
+    #price;
+    #stockQuantity;
+
+    constructor(productID, name, price, stockQuantity) {
+        this.#productID = String(productID).trim();
+        this.#name = String(name).trim();
+        this.#price = parseFloat(price);
+        this.#stockQuantity = parseInt(stockQuantity, 10);
+    }
+
+    // --- Getters ---
+    get productID() { return this.#productID; }
+    get name() { return this.#name; }
+    get price() { return this.#price; }
+    get stockQuantity() { return this.#stockQuantity; }
+
+    // --- Setters ---
+    set name(value) {
+        if (!value || value.trim() === "") throw new Error("Product name cannot be empty.");
+        this.#name = value.trim();
+    }
+
+    set price(value) {
+        const parsed = parseFloat(value);
+        if (isNaN(parsed) || parsed < 0) throw new Error("Price must be a non-negative decimal.");
+        this.#price = parsed;
+    }
+
+    set stockQuantity(value) {
+        const parsed = parseInt(value, 10);
+        if (isNaN(parsed) || parsed < 0) throw new Error("stockQuantity must be a positive integer.");
+        this.#stockQuantity = parsed;
+    }
+
+    // --- Activity 3(a) UML Methods ---
+    getDetails() {
+        return {
+            productID: this.#productID,
+            name: this.#name,
+            price: this.#price,
+            stockQuantity: this.#stockQuantity
+        };
+    }
+
+    updateProduct(name, price, stockQuantity) {
+        this.name = name;
+        this.price = price;
+        this.stockQuantity = stockQuantity;
+    }
+}
+
+/**
+ * ProductRepository (CRUD Service)
+ * Enforces function length <= 30 lines rule
+ */
+class ProductRepository {
+    #storage = [];
+
+    constructor() {
+        // Initial dataset matching OLMS inventory
+        this.create(new Product("P001", "Fresh Farm Milk 1L", 3.50, 25));
+        this.create(new Product("P002", "Whole Wheat Bread", 2.80, 18));
+        this.create(new Product("P003", "Organic Brown Eggs (10s)", 4.20, 30));
+        this.create(new Product("P004", "Green Gala Apples (1kg)", 5.90, 12));
+    }
+
+    getAll() {
+        return this.#storage;
+    }
+
+    findById(productID) {
+        const query = String(productID).trim().toLowerCase();
+        return this.#storage.find(p => p.productID.toLowerCase() === query) || null;
+    }
+
+    findAny(query) {
+        const q = String(query).trim().toLowerCase();
+        return this.#storage.filter(p => 
+            p.productID.toLowerCase().includes(q) || 
+            p.name.toLowerCase().includes(q)
+        );
+    }
+
+    create(product) {
+        if (this.findById(product.productID)) {
+            throw new Error(`Product ID ${product.productID} already exists in database.`);
+        }
+        this.#storage.push(product);
+        return product;
+    }
+
+    update(productID, name, price, stockQuantity) {
+        const product = this.findById(productID);
+        if (!product) return null;
+        product.updateProduct(name, price, stockQuantity);
+        return product;
+    }
+
+    delete(productID) {
+        const index = this.#storage.findIndex(p => p.productID.toLowerCase() === productID.toLowerCase());
+        if (index === -1) return false;
+        this.#storage.splice(index, 1);
+        return true;
+    }
+}
+
+// Global Repository Instance
+const repo = new ProductRepository();
+
+// ============================================================================
+// UI CONTROLLER FUNCTIONS (< 30 lines per function rule)
+// ============================================================================
+
+// Activity 5: Data Display Function Construction
+function renderInventoryTable() {
+    const tableBody = document.getElementById("inventoryTableBody");
+    const products = repo.getAll();
+    tableBody.innerHTML = "";
+
+    if (products.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">No products found in system.</td></tr>`;
+        return;
+    }
+
+    products.forEach(p => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td><strong>${p.productID}</strong></td>
+            <td>${p.name}</td>
+            <td>$${p.price.toFixed(2)}</td>
+            <td>${p.stockQuantity}</td>
+            <td>
+                <button class="btn-action" onclick="openEditWorkspace('${p.productID}')">Edit</button>
+                <button class="btn-action btn-danger" onclick="confirmDirectDelete('${p.productID}')">Delete</button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// Activity 1: Create Function Construction
+function handleCreateProduct(event) {
+    event.preventDefault();
+    const feedback = document.getElementById("createFeedback");
+    try {
+        const id = document.getElementById("create_productID").value;
+        const name = document.getElementById("create_name").value;
+        const price = document.getElementById("create_price").value;
+        const stock = document.getElementById("create_stockQuantity").value;
+
+        const newProd = new Product(id, name, price, stock);
+        repo.create(newProd);
+
+        feedback.className = "message-box msg-success";
+        feedback.textContent = `Product [${newProd.productID}] "${newProd.name}" created successfully.`;
+        document.getElementById("createProductForm").reset();
+        renderInventoryTable();
+    } catch (err) {
+        feedback.className = "message-box msg-error";
+        feedback.textContent = err.message;
+    }
+}
+
+// Activity 2: Search Function Construction
+function handleSearchProduct(event) {
+    event.preventDefault();
+    const query = document.getElementById("search_query").value;
+    const feedback = document.getElementById("searchFeedback");
+    const resultsContainer = document.getElementById("searchResultsDisplay");
+
+    resultsContainer.innerHTML = "";
+    const matches = repo.findAny(query);
+
+    if (matches.length === 0) {
+        feedback.className = "message-box msg-error";
+        feedback.textContent = `Not found: No product matching "${query}".`;
+        return;
+    }
+
+    feedback.className = "message-box msg-info";
+    feedback.textContent = `Search successful: Found ${matches.length} matching product(s).`;
+
+    let html = `<table><thead><tr><th>ID</th><th>Name</th><th>Price</th><th>Stock</th><th>Action</th></tr></thead><tbody>`;
+    matches.forEach(p => {
+        html += `<tr><td>${p.productID}</td><td>${p.name}</td><td>$${p.price.toFixed(2)}</td><td>${p.stockQuantity}</td>
+                 <td><button class="btn-action" onclick="openEditWorkspace('${p.productID}')">Select</button></td></tr>`;
+    });
+    html += `</tbody></table>`;
+    resultsContainer.innerHTML = html;
+}
+
+// Activity 3: Edit Function Construction
+function openEditWorkspace(productID) {
+    const product = repo.findById(productID);
+    if (!product) return;
+
+    document.getElementById("edit_productID").value = product.productID;
+    document.getElementById("edit_name").value = product.name;
+    document.getElementById("edit_price").value = product.price;
+    document.getElementById("edit_stockQuantity").value = product.stockQuantity;
+
+    const feedback = document.getElementById("editFeedback");
+    feedback.className = "message-box msg-info";
+    feedback.textContent = `Loaded product ${product.productID} for editing.`;
+
+    document.getElementById("editDeleteSection").style.display = "block";
+    document.getElementById("editDeleteSection").scrollIntoView({ behavior: 'smooth' });
+}
+
+function handleSaveEdit(event) {
+    event.preventDefault();
+    const id = document.getElementById("edit_productID").value;
+    const name = document.getElementById("edit_name").value;
+    const price = document.getElementById("edit_price").value;
+    const stock = document.getElementById("edit_stockQuantity").value;
+    const feedback = document.getElementById("editFeedback");
+
+    try {
+        const updated = repo.update(id, name, price, stock);
+        feedback.className = "message-box msg-success";
+        feedback.textContent = `Product ${updated.productID} updated successfully. Validation verified.`;
+        renderInventoryTable();
+    } catch (err) {
+        feedback.className = "message-box msg-error";
+        feedback.textContent = err.message;
+    }
+}
+
+// Activity 4: Delete Function Construction
+function handleDeletePrompt() {
+    const id = document.getElementById("edit_productID").value;
+    const product = repo.findById(id);
+    if (!product) return;
+
+    const confirmed = confirm(
+        `Confirm Deletion?\n\n` +
+        `Product ID: ${product.productID}\n` +
+        `Name: ${product.name}\n` +
+        `Price: $${product.price.toFixed(2)}\n` +
+        `Stock: ${product.stockQuantity}\n\n` +
+        `Are you sure you want to delete this record?`
+    );
+
+    if (confirmed) {
+        repo.delete(id);
+        closeEditWorkspace();
+        renderInventoryTable();
+        alert(`Product ${id} has been permanently deleted.`);
+    }
+}
+
+function confirmDirectDelete(productID) {
+    openEditWorkspace(productID);
+    handleDeletePrompt();
+}
+
+function closeEditWorkspace() {
+    document.getElementById("editDeleteSection").style.display = "none";
+    document.getElementById("editForm").reset();
+}
+
+// Initialize display on load
+renderInventoryTable();
+</script>
+
+</body>
+</html>
