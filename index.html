@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OLMS - Online Local Mart System</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>Online Local Mart System (OLMS)</h1>
+            <p class="meta-text">CSEB5223: Software Construction — Integrated System (Customer · Staff · Product · Order)</p>
+        </div>
+        <div id="sessionInfo" class="meta-text nav-session hidden">
+            <span>Signed in as <strong id="sessionName"></strong><br><span id="sessionRole"></span></span>
+            <button type="button" class="btn-secondary" onclick="handleLogout()">Log out</button>
+        </div>
+    </header>
+
+    <!-- ===================================================================== -->
+    <!-- USE CASE: REGISTER / LOGIN -->
+    <!-- ===================================================================== -->
+    <section id="authView" class="grid">
+        <div class="card">
+            <h2>Login</h2>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login_role">Login as:</label>
+                    <select id="login_role">
+                        <option value="customer">Customer</option>
+                        <option value="staff">Staff</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="login_email">Email:</label>
+                    <input type="email" id="login_email" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="login_password">Password:</label>
+                    <input type="password" id="login_password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-block">Login</button>
+            </form>
+            <div id="loginFeedback" class="message-box"></div>
+            <p class="meta-text hint">Demo accounts are listed in OLMS/README.md.</p>
+        </div>
+
+        <div class="card">
+            <h2>Register (New Customer)</h2>
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label for="register_name">Full Name:</label>
+                    <input type="text" id="register_name" required autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label for="register_email">Email:</label>
+                    <input type="email" id="register_email" required autocomplete="email">
+                </div>
+                <div class="form-row" style="margin-top: 0;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="register_phone">Phone:</label>
+                        <input type="tel" id="register_phone" required placeholder="012-3456789" autocomplete="tel">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="register_password">Password (min 6):</label>
+                        <input type="password" id="register_password" required minlength="6" autocomplete="new-password">
+                    </div>
+                </div>
+                <button type="submit" class="btn-block">Create Account</button>
+            </form>
+            <div id="registerFeedback" class="message-box"></div>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- CUSTOMER VIEW: Browse · View Details · Place Order · View Order Status -->
+    <!-- ===================================================================== -->
+    <section id="customerView" class="hidden">
+        <div class="grid">
+            <div class="card">
+                <h2>Browse Products</h2>
+                <form onsubmit="handleBrowseProducts(event)">
+                    <div class="form-row" style="margin-top: 0;">
+                        <input type="text" id="browse_query" placeholder="Search by name or ID..." aria-label="Search products" style="flex: 2;">
+                        <button type="submit" style="flex: 1;">Search</button>
+                        <button type="button" class="btn-secondary" onclick="handleShowAllProducts()" style="flex: 1;">Show All</button>
+                    </div>
+                </form>
+                <div id="browseFeedback" class="message-box"></div>
+                <div id="catalogueDisplay"></div>
+            </div>
+
+            <div class="card">
+                <h2>Product Details</h2>
+                <div id="productDetailsDisplay" class="meta-text"></div>
+
+                <h2 class="section-gap">My Cart</h2>
+                <div id="cartDisplay"></div>
+                <div id="cartTotal" class="cart-total"></div>
+                <button type="button" id="placeOrderBtn" class="btn-block" onclick="handlePlaceOrder()">Place Order</button>
+                <div id="cartFeedback" class="message-box"></div>
+            </div>
+        </div>
+
+        <div class="card-full">
+            <h2>My Orders (Order Status)</h2>
+            <div id="customerOrdersDisplay"></div>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- STAFF VIEW: Manage Product (Lab 3 & 4 CRUD) · View Order · Update Status -->
+    <!-- ===================================================================== -->
+    <section id="staffView" class="hidden">
+        <div class="grid">
+            <!-- 1. CREATE FUNCTION CONSTRUCTION -->
+            <div class="card">
+                <h2>1. Create Product</h2>
+                <form id="createProductForm" onsubmit="handleCreateProduct(event)">
+                    <div class="form-group">
+                        <label for="create_productID">Product ID (e.g., P005):</label>
+                        <input type="text" id="create_productID" required placeholder="P005">
+                    </div>
+                    <div class="form-group">
+                        <label for="create_name">Product Name:</label>
+                        <input type="text" id="create_name" required placeholder="Product title">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="create_price">Price ($):</label>
+                            <input type="number" step="0.01" min="0" id="create_price" required placeholder="0.00">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label for="create_stockQuantity">Stock Quantity:</label>
+                            <input type="number" min="0" id="create_stockQuantity" required placeholder="0">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-block">Add Product to Inventory</button>
+                </form>
+                <div id="createFeedback" class="message-box"></div>
+            </div>
+
+            <!-- 2. SEARCH FUNCTION CONSTRUCTION -->
+            <div class="card">
+                <h2>2. Search Product</h2>
+                <form onsubmit="handleSearchProduct(event)">
+                    <div class="form-group">
+                        <label for="search_query">Search by Product ID or Name:</label>
+                        <div class="form-row" style="margin-top: 0;">
+                            <input type="text" id="search_query" required placeholder="Enter ID (P001) or Name..." style="flex: 2;">
+                            <button type="submit" style="flex: 1;">Search</button>
+                        </div>
+                    </div>
+                </form>
+                <div id="searchFeedback" class="message-box"></div>
+                <div id="searchResultsDisplay"></div>
+            </div>
+        </div>
+
+        <!-- 3 & 4. EDIT & DELETE WORKSPACE -->
+        <div id="editDeleteSection" class="card-full hidden">
+            <h2 id="editTitle">3 & 4. Edit / Delete Product</h2>
+            <form id="editForm" onsubmit="handleSaveEdit(event)">
+                <input type="hidden" id="edit_productID">
+                <div class="form-row">
+                    <div class="form-group" style="flex: 2;">
+                        <label for="edit_name">Product Name:</label>
+                        <input type="text" id="edit_name" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="edit_price">Price ($):</label>
+                        <input type="number" step="0.01" min="0" id="edit_price" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="edit_stockQuantity">Stock Quantity:</label>
+                        <input type="number" min="0" id="edit_stockQuantity" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <button type="submit" style="flex: 1;">Save Changes</button>
+                    <button type="button" class="btn-danger" onclick="handleDeletePrompt()" style="flex: 1;">Delete Product</button>
+                    <button type="button" class="btn-secondary" onclick="closeEditWorkspace()" style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+            <div id="editFeedback" class="message-box"></div>
+        </div>
+
+        <!-- 5. DATA DISPLAY FUNCTION CONSTRUCTION -->
+        <div class="card-full">
+            <h2>5. Product Inventory</h2>
+            <div id="inventoryDisplay"></div>
+        </div>
+
+        <!-- 6. ORDER MANAGEMENT (View Order · Update Order Status) -->
+        <div class="card-full">
+            <div class="section-heading">
+                <h2>6. Customer Orders</h2>
+                <select id="order_status_filter" class="status-select" aria-label="Filter orders by status" onchange="renderOrderManagement()">
+                    <option value="">All statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div id="orderFeedback" class="message-box"></div>
+            <div id="orderManagementDisplay"></div>
+        </div>
+    </section>
+</div>
+
+<!-- Load order matters: each layer uses the ones above it -->
+<script src="js/Classes.js"></script>
+<script src="js/Repositories.js"></script>
+<script src="js/Services.js"></script>
+<script src="js/Functions.js"></script>
+
+</body>
+</html>
