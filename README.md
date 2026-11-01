@@ -1,45 +1,71 @@
-# CSEB5223_SCM-Lab-and-Assignment
-# Online Local Mart System (OLMS)
+# OLMS — Integrated System
 
-A web-based local commerce platform connecting neighborhood grocery marts, supermarkets, and specialty food stores with nearby residents for fast, on-demand ordering and ordering updates.
+Integrates the four UML classes (**Customer, Staff, Product, Order**) into one working web app.
+The Lab 3 & 4 Product CRUD module (`OLMS Website_debugged.html`) is now the Staff "Manage Product" area.
 
----
+## How to run
 
-## 📦 System Modules
-- **Customer Portal:** Browse nearby marts, search localized inventory, real-time cart, and checkout.
-- **Merchant Dashboard:** Store operations, product catalog, inventory tracking, and order update.
-- **Admin Hub:** Merchant onboarding and platform configuration.
+- **App:** open `index.html` in a browser (no build step, no server needed).
+- **Tests:** open `tests/IntegrationTests.html`. The page should show `18 / 18 tests passed`.
 
----
+Data is held in memory, so refreshing the page resets to the demo data.
 
-## 🛠 Tech Stack & Environment
-- **Platform:** Web Application
-- **Frontend:** [e.g., React / Vue / Blade] (to be decided)
-- **Backend:** [e.g., Node.js / Laravel / Python FastAPI] (to be decided)
-- **Database:** [e.g., PostgreSQL / MySQL] (to be decided)
-- **CI/CD:** GitHub Actions (to be decided)
+### Demo accounts (test data only)
 
----
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| Customer | customer@olms.test | customer123 |
+| Staff (Manager) | staff@olms.test | staff123 |
 
-## 👥 Contributors (Team Members)
+New customers can also self-register on the login screen.
 
-| Role | Name | GitHub Username | Profile Link |
-| :--- | :--- | :--- | :--- |
-| **Team Lead** | Chan Wei Hong | `@DemonicBlack2005` | [DemonicBlack2005](https://github.com/DemonicBlack2005) |
-| **Member** | Hussein Musa Mohammed Osman | `@klombabomba` | [klombabomba](https://github.com/klombabomba) |
-|  | Krishnacharani A/P V Karthigeyan | `@Krishnacharani` | [Krishnacharani](https://github.com/Krishnacharani) |
-|  | Syed Fardeyn bin Salahudeen | `@syedfd37` | [syedfd37](https://github.com/syedfd37) |
-| **Assessing Lecturer** | Ts. Dr. Loo Yim Ling | `@YimLingLoo` | [YimLingLoo](https://github.com/YimLingLoo) |
+## Structure (layered MVC/Service, one file per layer)
 
----
+```
+OLMS/
+├── index.html                  UI for both roles (loads the 4 scripts in order)
+├── README.md
+├── css/
+│   └── styles.css
+├── js/
+│   ├── Classes.js              OrderStatus, Validator, Product, Customer, Staff, Order
+│   ├── Repositories.js         ProductRepository, CustomerRepository, StaffRepository, OrderRepository
+│   ├── Services.js             OrderService, AuthService, createSystem() + demo data
+│   └── Functions.js            UI helpers and controllers for every screen; starts the app
+└── tests/
+    ├── IntegrationTests.html   Open to run the tests
+    └── IntegrationTests.js
+```
 
-## 🌿 Git Branching Strategy
-- `main` — Production-ready code.
-- `dev` — Integration staging branch.
-- `feature/*` — Isolated feature branches. All merges require code review and passing CI builds.
+Each file is split into labelled sections (`// ----- Product -----`) so every class or controller is easy to find.
+Load order matters: Classes → Repositories → Services → Functions.
 
----
+## UML method → code
 
-## 📏 Standards & Modularity (listed in Assignment Part 1 Report)
-- **Naming:** `PascalCase` (classes), `camelCase` (functions/variables), `snake_case` (database).
-- **Modularity:** Layered MVC/Service architecture with maximum 30 lines per function.
+| UML method | Where | Used by |
+| :--- | :--- | :--- |
+| Customer.register() | `Customer.register()` | Register form |
+| Customer / Staff.login() | `login(password)` via `AuthService.login()` | Login form |
+| Customer.browseProduct() | `Customer.browseProduct()` | Browse Products |
+| Customer.viewProductDetails() | `Customer.viewProductDetails()` → `Product.getDetails()` | Details button |
+| Customer.placeOrder() | `Customer.placeOrder()` → `OrderService.placeOrder()` → `Order.createOrder()` | Place Order |
+| Customer.viewOrderStatus() | `Customer.viewOrderStatus()` | My Orders |
+| Staff.manageProduct() | `Staff.manageProduct(repo, "create" / "update" / "delete")` | Sections 1–5 |
+| Staff.viewOrder() | `Staff.viewOrder()` | Customer Orders |
+| Staff.updateOrderStatus() | `Staff.updateOrderStatus()` → `Order.updateStatus()` | Update button |
+| Product.updateProduct() | `Product.updateProduct()` | Save Changes |
+| Order.getOrderStatus() | `Order.getOrderStatus()` | Status badges |
+
+## Integration rules
+
+- **Placing an order is all-or-nothing.** Every cart line is checked against stock before any stock is reduced.
+- **Orders keep the price paid.** Each order stores the unit price at the moment it was placed.
+- **Order statuses only move forward:** Pending → Processing → Shipped → Delivered. An order can be cancelled only before it ships, and cancelling returns its stock.
+- **Deleted products:** a deleted product cannot be ordered; customers are told to remove it from their cart.
+
+## Additions beyond the UML diagram
+
+- A **cart** on Customer (`addToCart`, `removeFromCart`, `getCart`, `clearCart`), which `placeOrder()` needs.
+- A private **password** field on Customer and Staff, because `login()` has to verify something. Passwords are stored in plain text; this is acceptable for an in-memory demo but not for production.
+- **Cancelled** status and `Order.getNextStatuses()`.
+- **Product ID format** `P` followed by 3 or more digits, and prices limited to 2 decimal places.
